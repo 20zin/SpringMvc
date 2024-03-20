@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -69,7 +70,7 @@ public class BasicController {
         return "basic/item";
     }
 
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV4(Item item){
         itemRepository.save(item);
 //        model.addAttribute("item", item); //자동 추가, 생략 가능, 이름바꾸면 안됨 , 이름지우면 클래스 이름의 앞글자 소문자로 해서 인식함
@@ -77,12 +78,34 @@ public class BasicController {
     }
     //자동 적용 됨
 
+    //@PostMapping("/add")
+    public String addItemV5(Item item){
+        itemRepository.save(item);
+        return "redirect:/basic/items" + item.getId(); //살짝 위험함
+    }
+
+    @PostMapping("/add")
+    public String addItemV6(Item item, RedirectAttributes redirectAttributes){
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/basic/items/{itemId}";
+    }
+
     @GetMapping("/{itemId}/edit")
     public String editForm(@PathVariable Long itemId, Model model){
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
         return "basic/editForm";
     }
+
+    @PostMapping("/{itemId}/edit")
+    public String edit(@PathVariable Long itemId, @ModelAttribute Item item){
+        itemRepository.update(itemId,item);
+        return "redirect:/basic/items/{itemId}";
+    }
+
+
 
 
     /**
